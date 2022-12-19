@@ -1,24 +1,41 @@
-import logo from './logo.svg';
-import './App.css';
+import { Routes } from "react-router";
+import { Route, BrowserRouter } from 'react-router-dom'
+import { QueryClient, QueryCache, QueryClientProvider } from 'react-query';
+
+import Contacts from 'pages/Contacts';
+import PageNotFound from 'pages/PageNotFound';
+
+const twentyFourHoursInMs = 1000 * 60 * 60 * 24;
+const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      if (query.state.data !== undefined) {
+        // TODO: show toast from here
+        console.dir(error);
+      }
+    },
+  }),
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      refetchOnmount: true,
+      refetchOnReconnect: false,
+      retry: false,
+      staleTime: twentyFourHoursInMs,
+    },
+  },
+});
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Contacts />} />
+          <Route path="*" element={<PageNotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }
 
